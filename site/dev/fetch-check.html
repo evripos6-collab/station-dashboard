@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>fetch layer check</title>
+<style>
+  body { background:#04070c; color:#e8eef6; margin:0; padding:16px;
+         font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+  pre { white-space: pre-wrap; }
+  .bad { color:#ff5252; }
+</style>
+</head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+import { readConfig } from "../js/config.js";
+import { fetchAll } from "../js/api.js";
+
+const out = document.getElementById("out");
+const lines = [];
+const say = text => { lines.push(text); out.textContent = lines.join("\n"); };
+
+try {
+  const config = readConfig();
+  say(`proxy    ${config.proxy}`);
+  say(`stations ${config.stations.map(s => `${s.id}:${s.band}`).join(" ")}`);
+  say(`window   -${config.hoursPast}h / +${config.hoursFuture}h`);
+  say("");
+
+  const started = performance.now();
+  const { stations, observations } = await fetchAll(config);
+  const elapsed = Math.round(performance.now() - started);
+
+  for (const station of stations) {
+    const mine = observations.filter(o => o.ground_station === station.id);
+    say(`${station.id} ${station.name}`);
+    say(`  band ${station.band}  connected ${station.is_connected}  ` +
+        `available ${station.is_available}  testing ${station.testing}`);
+    say(`  observations ${mine.length}  future_observations ${station.future_observations}`);
+  }
+
+  say("");
+  say(`total ${observations.length} observations in ${elapsed} ms`);
+  if (observations.length) {
+    say(`first ${observations[0].start}  last ${observations[observations.length - 1].end}`);
+  }
+  const withoutTle = observations.filter(o => !o.tle1 || !o.tle2).length;
+  say(`missing tle ${withoutTle}`);
+  const statuses = {};
+  for (const o of observations) statuses[o.status] = (statuses[o.status] || 0) + 1;
+  say(`status ${JSON.stringify(statuses)}`);
+} catch (error) {
+  out.className = "bad";
+  say(`FAILED: ${error.message}`);
+}
+</script>
+</body>
+</html>
