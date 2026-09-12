@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ground track check</title>
+<script type="importmap">
+{ "imports": { "satellite.js": "https://cdn.jsdelivr.net/npm/satellite.js@7.1.0/+esm" } }
+</script>
+<style>
+  body { background:#04070c; color:#e8eef6; margin:0; padding:16px;
+         font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+  pre { white-space: pre-wrap; }
+  .bad { color:#ff5252; }
+</style>
+</head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+import { readConfig } from "../js/config.js";
+import { fetchAll } from "../js/api.js";
+import { groundTrack, satelliteName } from "../js/orbit.js";
+
+const out = document.getElementById("out");
+const lines = [];
+const say = text => { lines.push(text); out.textContent = lines.join("\n"); };
+
+try {
+  const config = readConfig();
+  const { observations } = await fetchAll(config);
+  say(`${observations.length} observations, sampling every ${config.sampleSeconds}s`);
+  say("");
+
+  let failed = 0;
+  const started = performance.now();
+
+  for (const obs of observations) {
+    const track = groundTrack(obs, config.sampleSeconds);
+    if (!track) {
+      failed++;
+      say(`  no track: ${obs.id} ${satelliteName(obs)}`);
+      continue;
+    }
+    const heights = [];
+    for (let i = 3; i < track.length; i += 4) heights.push(track[i]);
+    const span = (Date.parse(obs.end) - Date.parse(obs.start)) / 1000;
+    const expected = Math.floor((span + config.sampleSeconds) / config.sampleSeconds) + 1;
+    const points = track.length / 4;
+    const flag = points === expected ? "" : `  SAMPLE COUNT ${points} != ${expected}`;
+    if (flag || heights.length < 3) {
+      say(`${obs.id} ${satelliteName(obs)} span ${span}s points ${points}${flag}`);
+    }
+    heights.sort((a, b) => a - b);
+    if (heights[0] < 150e3 || heights[heights.length - 1] > 2500e3) {
+      say(`${obs.id} ${satelliteName(obs)} height range ` +
+          `${Math.round(heights[0] / 1000)}–${Math.round(heights[heights.length - 1] / 1000)} km`);
+    }
+  }
+
+  const elapsed = Math.round(performance.now() - started);
+  say("");
+  say(`propagated ${observations.length - failed} tracks in ${elapsed} ms, ${failed} unusable`);
+
+  const first = observations.find(o => groundTrack(o, config.sampleSeconds));
+  if (first) {
+    const track = groundTrack(first, config.sampleSeconds);
+    say("");
+    say(`sample: ${first.id} ${satelliteName(first)} epoch ${first.start}`);
+    say(`  ${track.slice(0, 8).map(n => Number(n.toFixed(3))).join(", ")} …`);
+  }
+} catch (error) {
+  out.className = "bad";
+  say(`FAILED: ${error.message}`);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>czml check</title>
+<script type="importmap">
+{ "imports": { "satellite.js": "https://cdn.jsdelivr.net/npm/satellite.js@7.1.0/+esm" } }
+</script>
+<style>
+  body { background:#04070c; color:#e8eef6; margin:0; padding:16px;
+         font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+  pre { white-space: pre-wrap; }
+  a { color:#7fb2ff; }
+  .bad { color:#ff5252; }
+</style>
+</head>
+<body>
+<pre id="out">running…</pre>
+<p id="links"></p>
+<script type="module">
+import { readConfig } from "../js/config.js";
+import { fetchAll } from "../js/api.js";
+import { buildCzml, stationState } from "../js/czml.js";
+
+const out = document.getElementById("out");
+const lines = [];
+const say = text => { lines.push(text); out.textContent = lines.join("\n"); };
+
+function download(name, data) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)],
+    { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.textContent = name;
+  document.getElementById("links").append(a, " ");
+}
+
+try {
+  const config = readConfig();
+  const { stations, observations } = await fetchAll(config);
+  const started = performance.now();
+  const { czml, table, title } = buildCzml(stations, observations, config);
+  const elapsed = Math.round(performance.now() - started);
+
+  say(`title  ${title}`);
+  say("");
+  for (const station of stations) {
+    const state = stationState(station);
+    say(`${station.id} ${state.label}  rgba ${state.rgba.join(",")}`);
+  }
+
+  const kinds = { document: 0, station: 0, observation: 0, link: 0 };
+  for (const packet of czml) {
+    if (packet.id === "document") kinds.document++;
+    else if (packet.id.startsWith("station-")) kinds.station++;
+    else if (packet.id.endsWith("-link")) kinds.link++;
+    else kinds.observation++;
+  }
+
+  say("");
+  say(`packets ${czml.length}  ${JSON.stringify(kinds)}`);
+  say(`table rows ${table.length} of ${observations.length} observations`);
+  say(`clock ${czml[0].clock.interval}`);
+  say(`built in ${elapsed} ms`);
+
+  const onGlobe = kinds.observation;
+  if (onGlobe !== kinds.link) say(`MISMATCH: ${onGlobe} tracks but ${kinds.link} links`);
+
+  download("czml.json", czml);
+  download("table.json", table);
+} catch (error) {
+  out.className = "bad";
+  say(`FAILED: ${error.message}`);
+}
+</script>
+</body>
+</html>
