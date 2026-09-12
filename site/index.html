@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SatNOGS station dashboard</title>
 <script src="https://cesium.com/downloads/cesiumjs/releases/1.121/Build/Cesium/Cesium.js"></script>
 <link href="https://cesium.com/downloads/cesiumjs/releases/1.121/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
@@ -94,6 +95,13 @@
           color:var(--muted); margin-left:6px; vertical-align:1px; }
   .empty { color:var(--muted); padding:8px 3px; }
 
+  #listctl { display:none; margin:0 8px 8px 0; }
+  #expand { width:100%; appearance:none; cursor:pointer;
+            font:inherit; font-size:11px; color:var(--muted);
+            background:rgba(255,255,255,.03); border:1px solid var(--line);
+            border-radius:8px; padding:7px 10px; }
+  #expand:active { background:rgba(255,255,255,.07); }
+
   #legend { display:flex; gap:11px; flex-wrap:wrap; margin:8px 8px 0 0;
             padding-top:7px; border-top:1px solid var(--line-2);
             color:var(--muted); font-size:10.5px; }
@@ -106,10 +114,54 @@
   .cesium-viewer-animationContainer, .cesium-viewer-timelineContainer { opacity:.9; }
   .cesium-timeline-main { border:1px solid var(--line); }
   .cesium-widget-credits { display:none !important; }
+
+  /* ---- splash ------------------------------------------------------ */
+  #splash { position:absolute; inset:0; z-index:50; background:#04070c;
+            display:flex; flex-direction:column; align-items:center;
+            justify-content:center; gap:14px; transition:opacity .5s ease; }
+  #splash.gone { opacity:0; pointer-events:none; }
+  #splash-logo { width:112px; height:112px; object-fit:contain; }
+  #splash-title { font-family:'Chakra Petch','Helvetica Neue',sans-serif;
+                  font-size:14px; font-weight:600; letter-spacing:1.2px;
+                  text-transform:uppercase; color:#fff; text-align:center;
+                  padding:0 24px; }
+  #splash-bar { width:220px; max-width:60vw; height:3px; background:var(--line);
+                border-radius:2px; overflow:hidden; }
+  #splash-fill { height:100%; width:4%; background:var(--run);
+                 transition:width .35s ease; }
+  #splash-step { font-size:11px; color:var(--muted); }
+
+  /* ---- narrow screens ---------------------------------------------- */
+  @media (max-width: 720px) {
+    #panel { left:8px; right:8px; top:8px; width:auto; font-size:11px;
+             padding:10px 4px 8px 10px; }
+    #panel h1 { font-size:12.5px; flex-wrap:wrap; }
+    #chips { gap:6px; }
+    .chip { padding:3px 7px 3px 6px; }
+    #obswrap { max-height:min(26vh, 200px); }
+    #legend { gap:8px; font-size:9.5px; }
+    .cesium-viewer-animationContainer { transform:scale(.78);
+                                        transform-origin:bottom left; }
+    #listctl { display:block; }
+    /* collapsed: the pass under way, or the next one if nothing is running */
+    #panel:not(.open) #obs tr[data-id]:not(.now):not(.next) { display:none; }
+    #panel:not(.open) #obswrap { max-height:none; overflow:visible; }
+    #splash-logo { width:84px; height:84px; }
+  }
+  @media (max-height: 520px) {
+    #obswrap { max-height:22vh; }
+  }
 </style>
 </head>
 <body>
 <div id="cesiumContainer"></div>
+
+<div id="splash">
+  <img id="splash-logo" src="logo.svg" alt="">
+  <div id="splash-title">SatNOGS station dashboard</div>
+  <div id="splash-bar"><div id="splash-fill"></div></div>
+  <div id="splash-step">starting</div>
+</div>
 
 <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
   <symbol id="dishglyph" viewBox="0 0 48 48">
@@ -127,6 +179,7 @@
   <h1><span id="title">loading&hellip;</span> <span id="clock">--:--:--Z</span></h1>
   <div id="agewrap"><span id="age">connecting&hellip;</span></div>
   <div id="chips"></div>
+  <div id="listctl"><button id="expand" type="button">show all passes</button></div>
   <div id="obswrap"><table id="obs"></table></div>
   <div id="legend">
     <span><svg class="dish future"><use href="#dishglyph"/></svg>future</span>
