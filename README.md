@@ -45,7 +45,7 @@ The original dashboard is a rewrite of KD9KCK's `satnogsmap`, rebuilt entirely
 on the SatNOGS Network observations endpoint.
 
 Alex Gavrilis ([@alexandrosgavrilis](https://github.com/alexandrosgavrilis)) and
-Thodoris ([@thodoriskf](https://github.com/thodoriskf)) — authors and station
+Theodoros Kafetzoglou ([@thodoriskf](https://github.com/thodoriskf)) — authors and station
 operators.
 
 [Libre Space Foundation](https://libre.space/) for SatNOGS, the network and the
@@ -65,4 +65,4 @@ For the completion of this dashboard we hereby declare we used Claude (Anthropic
 
 
 
-Thank you for your curiosity in investigating this here repo.
+Thank you for your curiosity in investigating this here repo, enjoy.
