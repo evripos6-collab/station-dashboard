@@ -26,8 +26,11 @@ function starFace() {
 
 async function addImagery(viewer) {
   try {
+    // Without this, clicking the globe runs an ArcGIS Identify query and opens
+    // the info box on whatever administrative polygon is under the cursor.
     const esri = await Cesium.ArcGisMapServerImageryProvider.fromUrl(
-      "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer");
+      "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer",
+      { enablePickFeatures: false });
     viewer.imageryLayers.addImageryProvider(esri);
   } catch (error) {
     console.warn("Esri imagery unavailable, using OSM:", error);
@@ -72,15 +75,20 @@ export function createViewer(containerId) {
   return viewer;
 }
 
-export function flyHome(viewer, stations, duration = 0) {
+export function flyHome(viewer, stations, config, duration = 0) {
   if (!stations.length) return;
-  const lat = stations.reduce((a, s) => a + s.lat, 0) / stations.length;
-  const lng = stations.reduce((a, s) => a + s.lng, 0) / stations.length;
-  // One station needs less room than a spread-out pair, but stay high enough
-  // that a whole LEO pass fits in frame.
-  const alt = stations.length > 1 ? 1.3e6 : 2.4e6;
-  viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(lng, lat, alt),
+  const target = Cesium.BoundingSphere.fromPoints(
+    stations.map(s => Cesium.Cartesian3.fromDegrees(s.lng, s.lat)));
+  // A non-finite pitch or range reaches the camera as a NaN position, which
+  // makes every distance in the scene NaN and stops rendering outright.
+  const pitch = Number.isFinite(config.cameraPitch) ? config.cameraPitch : -40;
+  // A single station needs less room than a spread-out pair, but stay far
+  // enough back that a whole LEO pass fits in frame.
+  const range = config.cameraRange > 0
+    ? config.cameraRange
+    : (stations.length > 1 ? 3.0e6 : 3.6e6);
+  viewer.camera.flyToBoundingSphere(target, {
     duration,
+    offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(pitch), range),
   });
 }
