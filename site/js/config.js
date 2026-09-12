@@ -1,5 +1,6 @@
 const DEFAULTS = {
   proxy: "https://satnogs-cors-proxy.nkuasatnogs.workers.dev",
+  network: "https://network.satnogs.org",
   stations: "4755:UHF,4791:UHF,5026:VHF",
   past: 3,
   future: 24,
@@ -27,6 +28,7 @@ export function readConfig(search = window.location.search) {
   const q = new URLSearchParams(search);
   return {
     proxy: (q.get("proxy") || DEFAULTS.proxy).replace(/\/+$/, ""),
+    network: (q.get("network") || DEFAULTS.network).replace(/\/+$/, ""),
     stations: parseStations(q.get("stations") || DEFAULTS.stations),
     hoursPast: number(q.get("past"), DEFAULTS.past),
     hoursFuture: number(q.get("future"), DEFAULTS.future),
