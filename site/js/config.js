@@ -5,6 +5,8 @@ const DEFAULTS = {
   past: 3,
   future: 24,
   sample: 15,
+  pitch: -40,
+  range: 0,
   refresh: 5,
 };
 
@@ -33,6 +35,8 @@ export function readConfig(search = window.location.search) {
     hoursPast: number(q.get("past"), DEFAULTS.past),
     hoursFuture: number(q.get("future"), DEFAULTS.future),
     sampleSeconds: number(q.get("sample"), DEFAULTS.sample),
+    cameraPitch: number(q.get("pitch"), DEFAULTS.pitch),
+    cameraRange: number(q.get("range"), DEFAULTS.range),
     refreshMinutes: number(q.get("refresh"), DEFAULTS.refresh),
   };
 }
