@@ -39,7 +39,7 @@ async function addImagery(viewer) {
   }
 }
 
-export function createViewer(containerId) {
+export function createViewer(containerId, config) {
   // No Cesium ion asset is used, so no ion token is needed or sent.
   Cesium.Ion.defaultAccessToken = undefined;
 
@@ -69,7 +69,11 @@ export function createViewer(containerId) {
   scene.globe.dynamicAtmosphereLightingFromSun = true;
   scene.fog.enabled = true;
   scene.fog.density = 0.0004;
-  scene.highDynamicRange = true;
+  // Order-independent translucency needs float render targets; where they
+  // misbehave, translucent primitives such as the dashed link lines can drop
+  // out entirely.
+  scene.orderIndependentTranslucency = config.oit;
+  scene.highDynamicRange = config.hdr;
   scene.moon.show = true;
 
   return viewer;
