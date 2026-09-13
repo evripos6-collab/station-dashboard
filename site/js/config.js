@@ -10,6 +10,8 @@ const DEFAULTS = {
   refresh: 5,
   idle: 120,
   links: "dash",
+  oit: false,
+  hdr: true,
 };
 
 export function parseStations(spec) {
@@ -28,6 +30,12 @@ function number(value, fallback) {
   return value !== null && Number.isFinite(n) ? n : fallback;
 }
 
+function flag(value, fallback) {
+  if (value === "1" || value === "true") return true;
+  if (value === "0" || value === "false") return false;
+  return fallback;
+}
+
 export function readConfig(search = window.location.search) {
   const q = new URLSearchParams(search);
   return {
@@ -39,9 +47,9 @@ export function readConfig(search = window.location.search) {
     sampleSeconds: number(q.get("sample"), DEFAULTS.sample),
     idleMinutes: number(q.get("idle"), DEFAULTS.idle),
     linkStyle: q.get("links") === "solid" ? "solid" : DEFAULTS.links,
-    debug: q.get("debug") === "1",
-    oit: q.get("oit") !== "0",
-    hdr: q.get("hdr") !== "0",
+    debug: flag(q.get("debug"), false),
+    oit: flag(q.get("oit"), DEFAULTS.oit),
+    hdr: flag(q.get("hdr"), DEFAULTS.hdr),
     cameraPitch: number(q.get("pitch"), DEFAULTS.pitch),
     cameraRange: number(q.get("range"), DEFAULTS.range),
     refreshMinutes: number(q.get("refresh"), DEFAULTS.refresh),
