@@ -124,8 +124,24 @@ document.addEventListener("visibilitychange", () => {
   if (age > 60) refreshNow(); else schedule();
 });
 
+function showDebug() {
+  if (!config.debug) return;
+  const links = source
+    ? [...source.entities.values].filter(e => String(e.id).endsWith("-link"))
+    : [];
+  const now = viewer.clock.currentTime;
+  const showing = links.filter(e => e.isAvailable(now)).length;
+  const scene = viewer.scene;
+  document.getElementById("debug").textContent =
+    `links ${links.length} \u00b7 showing ${showing} \u00b7 style ${config.linkStyle}` +
+    ` \u00b7 logDepth ${scene.logarithmicDepthBuffer}` +
+    ` \u00b7 webgl2 ${!!scene.context.webgl2} \u00b7 dpr ${window.devicePixelRatio}` +
+    ` \u00b7 hdr ${scene.highDynamicRange}`;
+}
+
 viewer.clock.onTick.addEventListener(() => {
   paint(Cesium.JulianDate.toDate(viewer.clock.currentTime).getTime());
+  showDebug();
   const age = updated === null ? null : (Date.now() - updated) / 1000;
   showAge(age, {
     stale: (age ?? Infinity) > config.refreshMinutes * 60 * 2,
