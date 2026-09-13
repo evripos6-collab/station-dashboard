@@ -1,38 +1,38 @@
 /**
- * satnogs-cors-proxy > Cloudflare Worker
+ * satnogs-cors-proxy — Cloudflare Worker
  *
- * 
- * 
- * network.satnogs.org sends no Access-Control-Allow-Origin header, so
- * browser will fetch API and then refuse to let page JavaScript read the
+ * WHY THIS EXISTS
+ * ---------------
+ * network.satnogs.org sends no Access-Control-Allow-Origin header, so a
+ * browser will fetch its API and then refuse to let page JavaScript read the
  * response. CORS is enforced by the browser, not the server, and cannot be
- * disabled from the client. fetch server-side, re-emit with the
- * header attached.
+ * disabled from the client.
  *
- * It is NOT general proxy:
- *  - only network.satnogs.org, only /api/ paths, only GET/HEAD/OPTIONS
+ * It is deliberately NOT a general proxy:
+ *   - only network.satnogs.org, only /api/ paths, only GET/HEAD/OPTIONS
  *   - only Origins on the allowlist below
- * otherwise, anyone who finds URL can route traffic through
+ * Without those, anyone who finds the URL can route arbitrary traffic through
  * our account and exhaust the 100,000 requests/day free quota.
- * Responses are cached at the edge (see CACHE_SECONDS) so
+ *
+ * Responses are cached at the edge (see CACHE_SECONDS) so a lecture hall of
  * people scanning a QR code produces a handful of upstream requests rather
- * than one per viewer. That protects both your quota and SatNOGS'.
+ * than one per viewer. That protects both our quota and SatNOGS'. The client
+ * floors its time-window bounds to a matching grid so the URLs collide.
  */
 
 const UPSTREAM = "https://network.satnogs.org";
 const ALLOWED_PATH_PREFIX = "/api/";
-const CACHE_SECONDS = 60;
+const CACHE_SECONDS = 300;
 
-// Origins permitted to read responses. Add our Pages domain once deployed.
+
 // "*" would work but makes the proxy usable by any site on the internet.
 const ALLOWED_ORIGINS = [
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "https://station-dashboard-eda.pages.dev",
-  // "https://<our-project>.pages.dev",
+  "https://station-dashboard-eda.pages.dev/",
+  // "https://<custom-domain>",
 ];
 
-// Identify ourselves upstream.
+// Identify ourselves upstream. Operators appreciate being able to tell who is
+// polling them, and it gives LSF someone to contact rather than a block.
 const USER_AGENT =
   "satnogs-dashboard-proxy (+https://github.com/evripos6-collab/station-dashboard; station 4755/4791/5026)";
 
