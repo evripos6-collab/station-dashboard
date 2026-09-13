@@ -143,9 +143,21 @@
     .cesium-viewer-animationContainer { transform:scale(.78);
                                         transform-origin:bottom left; }
     #listctl { display:block; }
+    #panel h1 { flex-wrap:nowrap; gap:8px; }
+    #title { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    #clock { flex:none; }
+    .chip { font-size:10px; }
     /* collapsed: the pass under way, or the next one if nothing is running */
     #panel:not(.open) #obs tr[data-id]:not(.now):not(.next) { display:none; }
-    #panel:not(.open) #obswrap { max-height:none; overflow:visible; }
+    /* one line per row: the transmitter and the legend are detail for the
+       expanded view */
+    #panel:not(.open) #obs td { padding:4px 3px; }
+    #panel:not(.open) #obs td:nth-child(2) > .meta { display:none; }
+    #panel:not(.open) #obs .sat { display:inline-block; max-width:170px;
+                                  overflow:hidden; text-overflow:ellipsis;
+                                  white-space:nowrap; vertical-align:bottom; }
+    #panel:not(.open) #legend { display:none; }
+    #panel:not(.open) #obswrap { max-height:118px; }
     #splash-logo { width:84px; height:84px; }
   }
   @media (max-height: 520px) {
