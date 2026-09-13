@@ -20,7 +20,7 @@ stations=4755:UHF,4791:UHF,5026:VHF
 ### Turning a station off
 
 **For one link**, drop it from the query parameter. To show only the two NKUA
-stations and leave Meganisi out:
+stations and leave stations owned by PMs out:
 
 ```
 https://<pages-domain>/?stations=4755:UHF,5026:VHF
@@ -61,14 +61,32 @@ Give a station as a bare id (`4791`) to opt out of the suffix entirely.
 
 | Parameter | Default | Meaning |
 |---|---|---|
-| `past` | 3 | Hours of finished observations to include |
-| `future` | 24 | Hours of scheduled observations to include |
+| `past` | 2 | Hours of finished observations to include |
+| `future` | 12 | Hours of scheduled observations to include |
 | `refresh` | 5 | Minutes between refreshes |
+| `idle` | 120 | Minutes without interaction before refreshing pauses; 0 disables pausing |
 
 The Cesium clock window is the data window plus an hour at each end.
 
+These defaults are also the main lever on Worker usage. Each refresh costs one
+request per station plus one per page of observations, and a page holds 25. A
+window that keeps every station under 25 observations costs the minimum of two
+requests per station per refresh; widening `future` past that point adds a page
+for the busiest station first. `refresh` is the blunter lever: doubling it
+halves everything.
+
 Observations are selected by overlap, not by start time, so a pass already
 under way when the page loads is included.
+
+The window bounds sent to the API are floored to a five-minute grid. Every
+viewer in the same slot therefore requests an identical URL, which is what lets
+the Worker's cache serve them from a single upstream request. Without it each
+viewer's URL is unique and upstream load scales with the audience.
+
+A hidden tab does not refresh at all, and refreshing pauses after `idle`
+minutes without interaction. The age line then reads "paused, tap to resume",
+and any click, key or scroll resumes it with an immediate refresh. Set
+`idle=0` for a wall display that should keep refreshing unattended.
 
 ## Ground tracks
 
