@@ -7,7 +7,7 @@ import { animateLinks } from "./links.js";
 import { setProgress, hideSplash } from "./splash.js";
 
 const config = readConfig();
-const viewer = createViewer("cesiumContainer");
+const viewer = createViewer("cesiumContainer", config);
 wireToggle();
 
 let source = null;
@@ -136,7 +136,8 @@ function showDebug() {
     `links ${links.length} \u00b7 showing ${showing} \u00b7 style ${config.linkStyle}` +
     ` \u00b7 logDepth ${scene.logarithmicDepthBuffer}` +
     ` \u00b7 webgl2 ${!!scene.context.webgl2} \u00b7 dpr ${window.devicePixelRatio}` +
-    ` \u00b7 hdr ${scene.highDynamicRange}`;
+    ` \u00b7 hdr ${scene.highDynamicRange}` +
+    ` \u00b7 oit ${scene.orderIndependentTranslucency}`;
 }
 
 viewer.clock.onTick.addEventListener(() => {
