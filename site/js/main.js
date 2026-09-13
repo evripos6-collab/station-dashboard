@@ -73,11 +73,65 @@ async function refresh() {
   if (first) await hideSplash(viewer);
 }
 
-viewer.clock.onTick.addEventListener(() => {
-  paint(Cesium.JulianDate.toDate(viewer.clock.currentTime).getTime());
-  const age = updated == null ? null : (Date.now() - updated) / 1000;
-  showAge(age, (age ?? Infinity) > config.refreshMinutes * 60 * 2, failure);
+let timer = null;
+let paused = false;
+let lastActivity = Date.now();
+
+function schedule() {
+  clearTimeout(timer);
+  if (paused || document.hidden) return;
+  timer = setTimeout(tick, config.refreshMinutes * 60 * 1000);
+}
+
+// setTimeout rather than setInterval: a slow fetch must not stack another
+// behind it.
+async function tick() {
+  const idleMs = config.idleMinutes * 60 * 1000;
+  if (idleMs > 0 && Date.now() - lastActivity > idleMs) {
+    paused = true;
+    return;
+  }
+  await refresh();
+  schedule();
+}
+
+async function refreshNow() {
+  clearTimeout(timer);
+  await refresh();
+  schedule();
+}
+
+function onActivity() {
+  lastActivity = Date.now();
+  if (!paused) return;
+  paused = false;
+  refreshNow();
+}
+
+for (const event of ["pointerdown", "keydown", "wheel", "touchstart"]) {
+  addEventListener(event, onActivity, { passive: true });
+}
+
+// A hidden tab neither fetches nor schedules; returning to it catches up once.
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    clearTimeout(timer);
+    return;
+  }
+  lastActivity = Date.now();
+  paused = false;
+  const age = updated === null ? Infinity : (Date.now() - updated) / 1000;
+  if (age > 60) refreshNow(); else schedule();
 });
 
-refresh();
-setInterval(refresh, config.refreshMinutes * 60 * 1000);
+viewer.clock.onTick.addEventListener(() => {
+  paint(Cesium.JulianDate.toDate(viewer.clock.currentTime).getTime());
+  const age = updated === null ? null : (Date.now() - updated) / 1000;
+  showAge(age, {
+    stale: (age ?? Infinity) > config.refreshMinutes * 60 * 2,
+    error: failure,
+    paused,
+  });
+});
+
+refreshNow();
