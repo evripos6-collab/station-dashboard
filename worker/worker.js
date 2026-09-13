@@ -28,7 +28,7 @@ const CACHE_SECONDS = 60;
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  "https://station-dashboard.pages.dev",
+  "https://station-dashboard-eda.pages.dev",
   // "https://<our-project>.pages.dev",
 ];
 
