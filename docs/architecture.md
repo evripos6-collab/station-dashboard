@@ -49,9 +49,19 @@ at itself so the client can follow `rel="next"` verbatim, query filters intact.
 this repository. It raises the Network rate limit from 60 to 240 requests an
 hour, which matters because every cursor page is a request.
 
-Responses are cached at the edge for 60 seconds, so a room full of people
-scanning a QR code produces a handful of upstream requests rather than one per
-viewer. Cloudflare's free tier allows 100,000 Worker requests a day, 10 ms CPU
+Responses are cached at the edge for five minutes, and the client floors its
+time-window bounds to a matching grid so that concurrent viewers ask for
+identical URLs. Both halves are needed: cache-friendly headers achieve nothing
+if every viewer's URL differs by a second.
+
+This matters more for SatNOGS than for Cloudflare. The Network observations
+endpoint allows 60 requests an hour anonymously and 240 authenticated, and
+stations 256 an hour. Because the token lives on the Worker, every viewer draws
+on the same authenticated budget. With aligned URLs, upstream load is bounded
+by the refresh interval rather than by the number of people watching.
+
+A room full of people scanning a QR code therefore produces a handful of
+upstream requests rather than one per viewer. Cloudflare's free tier allows 100,000 Worker requests a day, 10 ms CPU
 per invocation and 50 subrequests per request. Pages static assets are
 unmetered, but any Pages Function would count against the Worker quota.
 
