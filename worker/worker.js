@@ -27,7 +27,7 @@ const CACHE_SECONDS = 300;
 
 // "*" would work but makes the proxy usable by any site on the internet.
 const ALLOWED_ORIGINS = [
-  "https://station-dashboard-eda.pages.dev/",
+  "https://station-dashboard-eda.pages.dev",
   // "https://<custom-domain>",
 ];
 
