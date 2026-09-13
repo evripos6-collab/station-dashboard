@@ -9,6 +9,7 @@ const DEFAULTS = {
   range: 0,
   refresh: 5,
   idle: 120,
+  links: "dash",
 };
 
 export function parseStations(spec) {
@@ -37,6 +38,8 @@ export function readConfig(search = window.location.search) {
     hoursFuture: number(q.get("future"), DEFAULTS.future),
     sampleSeconds: number(q.get("sample"), DEFAULTS.sample),
     idleMinutes: number(q.get("idle"), DEFAULTS.idle),
+    linkStyle: q.get("links") === "solid" ? "solid" : DEFAULTS.links,
+    debug: q.get("debug") === "1",
     cameraPitch: number(q.get("pitch"), DEFAULTS.pitch),
     cameraRange: number(q.get("range"), DEFAULTS.range),
     refreshMinutes: number(q.get("refresh"), DEFAULTS.refresh),
