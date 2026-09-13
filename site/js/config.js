@@ -40,6 +40,8 @@ export function readConfig(search = window.location.search) {
     idleMinutes: number(q.get("idle"), DEFAULTS.idle),
     linkStyle: q.get("links") === "solid" ? "solid" : DEFAULTS.links,
     debug: q.get("debug") === "1",
+    oit: q.get("oit") !== "0",
+    hdr: q.get("hdr") !== "0",
     cameraPitch: number(q.get("pitch"), DEFAULTS.pitch),
     cameraRange: number(q.get("range"), DEFAULTS.range),
     refreshMinutes: number(q.get("refresh"), DEFAULTS.refresh),
