@@ -39,6 +39,9 @@ async function addImagery(viewer) {
   }
 }
 
+// Order-independent translucency needs float render targets; where those
+// misbehave, translucent primitives such as the dashed link lines can drop out
+// of the scene entirely.
 export function createViewer(containerId, config) {
   // No Cesium ion asset is used, so no ion token is needed or sent.
   Cesium.Ion.defaultAccessToken = undefined;
@@ -48,6 +51,8 @@ export function createViewer(containerId, config) {
     baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false,
     navigationHelpButton: false, infoBox: true, timeline: true, animation: true,
     shadows: false,
+    // Construction-time only: the scene property is read-only afterwards.
+    orderIndependentTranslucency: config.oit,
   });
 
   const scene = viewer.scene;
@@ -69,10 +74,6 @@ export function createViewer(containerId, config) {
   scene.globe.dynamicAtmosphereLightingFromSun = true;
   scene.fog.enabled = true;
   scene.fog.density = 0.0004;
-  // Order-independent translucency needs float render targets; where they
-  // misbehave, translucent primitives such as the dashed link lines can drop
-  // out entirely.
-  scene.orderIndependentTranslucency = config.oit;
   scene.highDynamicRange = config.hdr;
   scene.moon.show = true;
 
