@@ -218,6 +218,10 @@ export function buildCzml(stations, observations, config, now = new Date()) {
         width: 2,
         arcType: "NONE",
         material: { polylineDash: LINK_DASH },
+        // Without EXT_frag_depth there is no logarithmic depth buffer, and a
+        // line running from orbit to the ground loses to z-precision near the
+        // surface. Drawing on depth failure keeps it visible there.
+        depthFailMaterial: { polylineDash: LINK_DASH },
         positions: { references: [`${id}#position`, `station-${gs}#position`] },
       },
     });
