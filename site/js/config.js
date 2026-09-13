@@ -2,12 +2,13 @@ const DEFAULTS = {
   proxy: "https://satnogs-cors-proxy.nkuasatnogs.workers.dev",
   network: "https://network.satnogs.org",
   stations: "4755:UHF,4791:UHF,5026:VHF",
-  past: 3,
-  future: 24,
+  past: 2,
+  future: 12,
   sample: 15,
   pitch: -40,
   range: 0,
   refresh: 5,
+  idle: 120,
 };
 
 export function parseStations(spec) {
@@ -35,6 +36,7 @@ export function readConfig(search = window.location.search) {
     hoursPast: number(q.get("past"), DEFAULTS.past),
     hoursFuture: number(q.get("future"), DEFAULTS.future),
     sampleSeconds: number(q.get("sample"), DEFAULTS.sample),
+    idleMinutes: number(q.get("idle"), DEFAULTS.idle),
     cameraPitch: number(q.get("pitch"), DEFAULTS.pitch),
     cameraRange: number(q.get("range"), DEFAULTS.range),
     refreshMinutes: number(q.get("refresh"), DEFAULTS.refresh),
