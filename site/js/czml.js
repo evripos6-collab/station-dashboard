@@ -1,7 +1,7 @@
 import { iso } from "./api.js";
 import { groundTrack, satelliteName } from "./orbit.js";
 import { SAT_ICON, DISH_ICON } from "./icons.js";
-import { LINK_DASH } from "./links.js";
+import { LINK_DASH, LINK_COLOR } from "./links.js";
 import { renderMarkdown } from "./markdown.js";
 
 export const STATUS_COLORS = {
@@ -142,6 +142,10 @@ export function buildCzml(stations, observations, config, now = new Date()) {
     czml.push(stationPacket(station, bands.get(station.id) || "?", row));
   }
 
+  const linkMaterial = config.linkStyle === "solid"
+    ? { solidColor: { color: { rgba: LINK_COLOR } } }
+    : { polylineDash: LINK_DASH };
+
   const table = [];
   for (const obs of observations) {
     if (!obs.tle1 || !obs.tle2) continue;
@@ -217,11 +221,11 @@ export function buildCzml(stations, observations, config, now = new Date()) {
         show: [{ interval, boolean: true }],
         width: 2,
         arcType: "NONE",
-        material: { polylineDash: LINK_DASH },
+        material: linkMaterial,
         // Without EXT_frag_depth there is no logarithmic depth buffer, and a
         // line running from orbit to the ground loses to z-precision near the
         // surface. Drawing on depth failure keeps it visible there.
-        depthFailMaterial: { polylineDash: LINK_DASH },
+        depthFailMaterial: linkMaterial,
         positions: { references: [`${id}#position`, `station-${gs}#position`] },
       },
     });
