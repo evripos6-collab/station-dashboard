@@ -95,6 +95,12 @@
           color:var(--muted); margin-left:6px; vertical-align:1px; }
   .empty { color:var(--muted); padding:8px 3px; }
 
+  #debug { display:none; }
+  #debug:not(:empty) { display:block; margin:0 8px 8px 0; padding:6px 8px;
+                       border:1px solid var(--line); border-radius:8px;
+                       color:var(--unknown); font-size:10px; line-height:1.5;
+                       word-break:break-word; }
+
   #listctl { display:none; margin:0 8px 8px 0; }
   #expand { width:100%; appearance:none; cursor:pointer;
             font:inherit; font-size:11px; color:var(--muted);
@@ -191,6 +197,7 @@
   <h1><span id="title">loading&hellip;</span> <span id="clock">--:--:--Z</span></h1>
   <div id="agewrap"><span id="age">connecting&hellip;</span></div>
   <div id="chips"></div>
+  <div id="debug"></div>
   <div id="listctl"><button id="expand" type="button">show all passes</button></div>
   <div id="obswrap"><table id="obs"></table></div>
   <div id="legend">
