@@ -150,6 +150,12 @@ irrelevant at globe scale.
 terrain or assets are added later, the token is public by design but should be
 domain-restricted to the Pages domain.
 
+**Order-independent translucency is disabled.** It is a Viewer construction
+option, not a settable scene property. Translucent primitives failed to render
+at all on some mobile hardware with it enabled, taking the dashed link lines
+with them; nothing in this scene relies on correct ordering between overlapping
+translucent surfaces. `?oit=1` turns it back on for comparison.
+
 **Imagery picking is disabled.** Otherwise every click on the globe runs an
 ArcGIS Identify query and opens the info box on an administrative polygon.
 Entities remain pickable.
