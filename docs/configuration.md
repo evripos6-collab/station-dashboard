@@ -20,7 +20,7 @@ stations=4755:UHF,4791:UHF,5026:VHF
 ### Turning a station off
 
 **For one link**, drop it from the query parameter. To show only the two NKUA
-stations and leave stations owned by PMs out:
+stations and leave Meganisi out:
 
 ```
 https://<pages-domain>/?stations=4755:UHF,5026:VHF
@@ -105,6 +105,24 @@ ten-minute pass is about forty points.
 | `range` | auto | Camera distance from the stations in metres |
 
 Left unset, `range` is 3,000 km for several stations and 3,600 km for one.
+
+## Rendering and diagnostics
+
+| Parameter | Default | Meaning |
+|---|---|---|
+| `oit` | `0` | Order-independent translucency; see below |
+| `hdr` | `1` | High dynamic range rendering |
+| `links` | `dash` | `solid` draws the station-to-satellite lines without the dash animation |
+| `debug` | `0` | `1` shows a readout of entity counts and renderer state in the panel |
+
+Order-independent translucency is off by default. It needs float render
+targets, and on hardware where those misbehave translucent primitives can drop
+out of the scene entirely — the dashed link lines vanish while everything else
+draws normally. It only earns its cost when translucent surfaces overlap each
+other, which in this scene they rarely do. `oit=1` restores it.
+
+`links=solid` moves the link lines into the opaque pass, which is a second
+fallback if translucency fails on some device despite `oit=0`.
 
 ## Endpoints
 
