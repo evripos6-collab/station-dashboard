@@ -65,11 +65,16 @@ function ageText(seconds) {
   return `updated ${Math.round(seconds / 3600)}h ago`;
 }
 
-export function showAge(seconds, stale, error) {
+export function showAge(seconds, { stale = false, error = null, paused = false } = {}) {
   const el = document.getElementById("age");
   if (error) {
     el.className = "err";
     el.textContent = `${ageText(seconds)} \u00b7 ${error.split(":")[0]}`;
+    return;
+  }
+  if (paused) {
+    el.className = "stale";
+    el.textContent = `${ageText(seconds)} \u00b7 paused, tap to resume`;
     return;
   }
   el.className = stale ? "stale" : "";
