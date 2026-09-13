@@ -23,7 +23,11 @@ function rotate(pattern, steps) {
 export function animateLinks(source) {
   for (const entity of source.entities.values) {
     if (!entity.polyline || !String(entity.id).endsWith("-link")) continue;
-    entity.polyline.material.dashPattern = new Cesium.CallbackProperty(
+    const pattern = new Cesium.CallbackProperty(
       () => rotate(BURST, DIRECTION * Math.floor(Date.now() / STEP_MS)), false);
+    entity.polyline.material.dashPattern = pattern;
+    if (entity.polyline.depthFailMaterial) {
+      entity.polyline.depthFailMaterial.dashPattern = pattern;
+    }
   }
 }
