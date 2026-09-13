@@ -1,5 +1,11 @@
 const MAX_PAGES = 50;
 
+// Window bounds are floored to a grid so every viewer asks for the same URL
+// within the same slot. Second-precision bounds make each request unique,
+// which defeats the Worker's cache and multiplies upstream load by the number
+// of people watching.
+const WINDOW_GRID_MS = 300e3;
+
 export function iso(date) {
   return date.toISOString().replace(/\.\d+Z$/, "Z");
 }
@@ -57,10 +63,11 @@ export async function fetchStation(config, id) {
 // start__lt / end__gt is an overlap test, so a pass already in progress is
 // returned. Filtering on start alone drops it.
 export function fetchObservations(config, id, now) {
+  const slot = Math.floor(now.getTime() / WINDOW_GRID_MS) * WINDOW_GRID_MS;
   return getAll(endpoint(config, "/api/observations/", {
     ground_station: id,
-    start__lt: iso(new Date(now.getTime() + config.hoursFuture * 3600e3)),
-    end__gt: iso(new Date(now.getTime() - config.hoursPast * 3600e3)),
+    start__lt: iso(new Date(slot + config.hoursFuture * 3600e3)),
+    end__gt: iso(new Date(slot - config.hoursPast * 3600e3)),
   }));
 }
 
